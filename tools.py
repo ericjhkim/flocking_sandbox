@@ -9,7 +9,7 @@ from datetime import datetime
 import networkx as nx
 
 #%% Plotting and Visualization
-def animate_3d(flock, interval=100):
+def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
     fig = plt.figure(figsize=(10,8))
     ax = fig.add_subplot(111, projection='3d')
 
@@ -118,6 +118,10 @@ def animate_3d(flock, interval=100):
 
     plt.tight_layout()
     plt.gca().set_aspect('equal')
+
+    if CREATE_GIF:
+        ani.save(gif_path, writer='pillow', fps=1000/interval)
+        
     plt.show()
 
 def draw_graph(nx_graph):

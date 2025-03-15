@@ -21,13 +21,12 @@ import matplotlib.animation as animation
 
 # Directories
 TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
-gif_path = f"visualizations/anim_{TIMESTAMP}.gif"
+gif_path = f"visualizations/laplacian_pinning/anim_{TIMESTAMP}.gif"
 
 # Controls
-SAVE_DATA = False
-CREATE_GIF = False
+CREATE_GIF = True
 SEED = 1
-# np.random.seed(SEED)
+np.random.seed(SEED)
 
 # Constants
 dt = 0.1                                    # Simulation interval
@@ -45,7 +44,7 @@ k2 = 1.0                                    # Absolute position control gain
 
 def main():
     # Set pin(s)
-    pins = [0,1,2,3,4,5,6,7]
+    pins = np.arange(0, N_AGENTS)
 
     # Create an instance of the class
     flock = Flocking3D(N_AGENTS, pins, [k1, k2], R_MAX, D_MIN, D_MAX, MAX_VEL, dt)
@@ -54,7 +53,7 @@ def main():
     for _ in np.arange(0, SIM_TIME, dt):
         flock.update()
 
-    tools.animate_3d(flock)
+    tools.animate_3d(flock, CREATE_GIF, gif_path)
 
 class Flocking3D:
     def __init__(self, N_AGENTS, pins, k, R_MAX, D_MIN, D_MAX, MAX_VEL, dt):
@@ -114,7 +113,7 @@ class Flocking3D:
             # print(f"G2's Adjacency Matrix:\n{self.A2}")
             # print(f"G2 Subgraph's Adjacency Matrix:\n{self.A_T2}")
 
-            tools.draw_graphs([self.G1, T1, self.G2, T2])
+            # tools.draw_graphs([self.G1, T1, self.G2, T2])
             # tools.plot_agents_connectivity(self.X, self.A1, self.A_T1)
         else:
             print("No matching tree found")

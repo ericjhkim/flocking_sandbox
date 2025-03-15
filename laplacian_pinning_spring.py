@@ -21,14 +21,12 @@ import matplotlib.animation as animation
 
 # Directories
 TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
-gif_path = f"visualizations/anim_{TIMESTAMP}.gif"
+gif_path = f"visualizations/laplacian_pinning_spring/anim_{TIMESTAMP}.gif"
 
 # Controls
-
-SAVE_DATA = False
-CREATE_GIF = False
+CREATE_GIF = True
 SEED = 1
-# np.random.seed(SEED)
+np.random.seed(SEED)
 
 # Constants
 dt = 0.1                                    # Simulation interval
@@ -43,25 +41,26 @@ MAX_VEL = 10.0                              # Maximum velocity of agents
 
 k1 = 1.0                                    # Relative formation control gain
 k2 = 1.0                                    # Absolute position control gain
+k3 = 4.0                                    # Velocity damping gain
 
 def main():
     # Set pin(s)
     pins = np.arange(0, N_AGENTS)
 
     # Create an instance of the class
-    flock = Flocking3D(N_AGENTS, pins, [k1, k2], R_MAX, D_MIN, D_MAX, MAX_VEL, dt)
+    flock = Flocking3D(N_AGENTS, pins, [k1, k2, k3], R_MAX, D_MIN, D_MAX, MAX_VEL, dt)
 
     # Run animation for 3D
     for t in np.arange(0, SIM_TIME, dt):
         flock.update(t)
 
-    tools.animate_3d(flock)
+    tools.animate_3d(flock, CREATE_GIF, gif_path)
 
 class Flocking3D:
     def __init__(self, N_AGENTS, pins, k, R_MAX, D_MIN, D_MAX, MAX_VEL, dt):
         # Initialize parameters
         self.N_AGENTS = N_AGENTS
-        self.k1, self.k2 = k
+        self.k1, self.k2, self.k3 = k
         self.R_MAX = R_MAX
         self.D_MIN = D_MIN                                  # Minimum distance between agents (for random generation)
         self.D_MAX = D_MAX                                  # Maximum distance between agents (for random generation)
@@ -140,7 +139,7 @@ class Flocking3D:
         for i in range(self.N_AGENTS):
             for j in range(self.N_AGENTS):
                 self.L1[i, j] = np.linalg.norm(self.X_tgt[i] - self.X_tgt[j])
-        self.K1 = self.A1 + self.A_T1                           # Spring constant matrix
+        self.K1 = self.A_T1                           # Spring constant matrix
 
         # Data storage
         self.data = [np.array(self.X)]
@@ -151,7 +150,7 @@ class Flocking3D:
             for j in range(self.N_AGENTS):
                 if self.A1[i, j] != 0:  # If neighbours
                     U[i] += self.K1[i,j]*(np.linalg.norm(self.X[j] - self.X[i]) - self.L1[i,j]) * (self.X[j] - self.X[i])/np.linalg.norm(self.X[j] - self.X[i])
-            U[i] -= 2*self.V[i]
+            U[i] -= self.k3*self.V[i]
 
         # Compute laplacian
         L = self.compute_laplacian(self.get_adjacency(self.X))
