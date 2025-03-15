@@ -28,4 +28,4 @@ Where $K$ is a matrix of spring constants, defined as the adjacency matrix for t
 ![sim2](https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/laplacian_pinning_spring/anim_20250315_154650.gif)
 
 ## References
-  1. Hamaoui, M. (2024). *Connectivity Maintenance through Unlabeled Spanning Tree Matching*. J Intell Robot Syst 110, 15 [doi:10.1007/s10846-024-02048-9](https://doi.org/10.1007/s10846-024-02048-9)(X-X_{tgt})
+  1. Hamaoui, M. (2024). *Connectivity Maintenance through Unlabeled Spanning Tree Matching*. J Intell Robot Syst 110, 15 [doi:10.1007/s10846-024-02048-9](https://doi.org/10.1007/s10846-024-02048-9)
