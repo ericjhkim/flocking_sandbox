@@ -15,8 +15,8 @@ Where $X$ is the $N\times3$ matrix of agents' positions in 3D Euclidean space, $
 ### Laplacian-Pinning with Spring System Connectivity Maintenance ([laplacian_pinning_spring.py](/laplacian_pinning_spring.py))
 An extension of the above control, this variant of the Laplacian-Pinning adds a spring-dyanmics potential function to experiment with more flexible connectivity behaviour.
 The control is implemented in a double-integrator system:
-$$\ddot{X_1} = -k_1 L (X-X_{tgt}) - k_2 P (X-X_{tgt})$$
-$$\ddot{X_2} = \sum_{j\in N_i}K_{ij}(||x_j-x_i||-L_{ij})\frac{x_j-x_i}{||x_j-x_i||} - k_3 \dot{x}_i$$
+$$\ddot{X_1} = -k_1 L (X-X_{tgt}) - k_2 P (X-X_{tgt})\\$$
+$$\ddot{X_2} = \sum_{j\in N_i}K_{ij}(||x_j-x_i||-L_{ij})\frac{x_j-x_i}{||x_j-x_i||} - k_3 \dot{x}_i\\$$
 $$\ddot{X} = \ddot{X_1} + \ddot{X_2}$$
 
 Where $K$ is a matrix of spring constants, defined as the adjacency matrix for the randomly-generated isomorphic subgraph $T_1$, and $L$ is the natural spring length, set to be the relative distance between two agents in the final target formation $X_{tgt}$.
