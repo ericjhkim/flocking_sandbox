@@ -24,7 +24,7 @@ TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
 gif_path = f"visualizations/laplacian_pinning/anim_{TIMESTAMP}.gif"
 
 # Controls
-CREATE_GIF = True
+CREATE_GIF = False
 SEED = 1
 np.random.seed(SEED)
 
@@ -50,8 +50,8 @@ def main():
     flock = Flocking3D(N_AGENTS, pins, [k1, k2], R_MAX, D_MIN, D_MAX, MAX_VEL, dt)
 
     # Run animation for 3D
-    for _ in np.arange(0, SIM_TIME, dt):
-        flock.update()
+    for t in np.arange(0, SIM_TIME, dt):
+        flock.update(t)
 
     tools.animate_3d(flock, CREATE_GIF, gif_path)
 
@@ -125,13 +125,10 @@ class Flocking3D:
         for old_idx, new_idx in self.mapping.items():
             self.X_tgt[old_idx] = self.X2[new_idx]
 
-        self.X_global = np.zeros((N_AGENTS, 3))
-        self.X_global[pins] = self.X_tgt[pins]
-
         # Data storage
-        self.data = [np.array(self.X)]
+        self.pos = [np.array(self.X)]
 
-    def update(self):
+    def update(self, t):
         # Compute laplacian
         L = self.compute_laplacian(self.get_adjacency(self.X))
 
@@ -147,11 +144,21 @@ class Flocking3D:
         self.V = U
         self.X += self.V * self.dt  # Update positions
 
-        if not self.fiedler_check(self.X):
-            print(f"Graph is disconnected: {self.get_adjacency(self.X)}")
+        if len(self.subgraph_connected()) > 0:
+            print(f"Graph is disconnected at time {round(t,1)} for edges {self.subgraph_connected()}.")
 
         # Save data
         self.save_data()
+
+    def subgraph_connected(self):
+        """
+        Check if a subgraph is connected.
+        """
+        A = self.get_adjacency(self.X[:, 3:])
+        M = A - self.A_T1
+        neg = np.where(M < 0)
+        neg = [(int(row), int(col)) for row, col in zip(neg[0], neg[1])]
+        return neg
 
     def compute_laplacian(self, A):
         """
@@ -228,7 +235,7 @@ class Flocking3D:
         """
         Store state in data storage object
         """
-        self.data.append(np.array(self.X))
+        self.pos.append(np.array(self.X))
 
 if __name__ == "__main__":
     main()
