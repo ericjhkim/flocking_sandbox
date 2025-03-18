@@ -1,6 +1,7 @@
-import os
-import re
-import h5py
+"""
+This module contains functions for plotting and visualization.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import art3d
@@ -121,15 +122,19 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
     ax.set_zlabel('Z')
 
     # Set axis limits to encapsulate the entire trajectory space
-    ax.set_xlim(x_min, x_max)
-    ax.set_ylim(y_min, y_max)
-    ax.set_zlim(z_min, z_max)
+    buffer = 2
+    ax.set_xlim(x_min-buffer, x_max+buffer)
+    ax.set_ylim(y_min-buffer, y_max+buffer)
+    ax.set_zlim(z_min-buffer, z_max+buffer)
 
     plt.tight_layout()
     plt.gca().set_aspect('equal')
 
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    path = gif_path + f"anim_{timestamp}.gif"
+
     if CREATE_GIF:
-        ani.save(gif_path, writer='pillow', fps=1000/interval)
+        ani.save(path, writer='pillow', fps=1000/interval)
 
     plt.show()
 

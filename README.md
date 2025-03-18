@@ -3,7 +3,7 @@
 This is a simulation sandbox for works-in-progress.
 
 ## Showcase
-### Laplacian-Pinning Connectivity Maintenance ([laplacian_pinning.py](/laplacian_pinning.py))
+### Laplacian-Pinning Connectivity Maintenance ([laplacian_pinning.py](/laplacian/laplacian_pinning.py))
 Building off [1], the goal is to preserve agent connectivity between initial and final swarm configurations (both relative and global reference frame positions).
 The control is implemented in a single-integrator system:
 
@@ -13,7 +13,7 @@ Where $X$ is the $N\times3$ matrix of agents' positions in 3D Euclidean space, $
 
 ![sim1](https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/laplacian_pinning/anim_20250315_152244.gif)
 
-### Laplacian-Pinning with Spring System Connectivity Maintenance ([laplacian_pinning_spring.py](/laplacian_pinning_spring.py))
+### Laplacian-Pinning with Spring System Connectivity Maintenance ([laplacian_pinning_spring.py](/laplacian/laplacian_pinning_spring.py))
 An extension of the above control, this variant of the Laplacian-Pinning adds a spring-dyanmics potential function to experiment with more flexible connectivity behaviour.
 The control is implemented in a double-integrator system:
 
