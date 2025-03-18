@@ -37,7 +37,7 @@ class Agents:
         """
         Update agent states.
         """
-        U = self.control()
+        U = self.control(t)
 
         self.V = self.dynamics(U)
         self.X += self.V * self.dt  # Update positions

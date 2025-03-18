@@ -1,7 +1,5 @@
 """
 This is single-integrator dynamics for a Laplacian-Pinning control law (control stable).
-
-@author: Kim.ej
 """
 import sys
 import os
@@ -52,7 +50,7 @@ class Flock(agents.SubgraphAgents):
         self.P = np.diag(np.zeros(self.N_AGENTS))                   # Pinning matrix
         self.P[pins,pins] = 1
 
-    def control(self):
+    def control(self, t):
         # Compute laplacian
         L = self.compute_laplacian(self.get_adjacency(self.X))
 

@@ -1,7 +1,5 @@
 """
 This is double-integrator dynamics for a Laplacian-Pinning control law (control stable) augmented by a mass-spring system.
-
-@author: Kim.ej
 """
 import sys
 import os
@@ -60,7 +58,7 @@ class Flock(agents.SubgraphAgents):
                 self.L1[i, j] = np.linalg.norm(self.X_tgt[i] - self.X_tgt[j])
         self.K1 = self.A_T1                                         # Spring constant matrix
 
-    def control(self):
+    def control(self, t):
         # Update adjacency matrix
         self.A1 = self.get_adjacency(self.X)
         
