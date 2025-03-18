@@ -15,6 +15,10 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
 
     flock.pos = np.array(flock.pos)
 
+    # Calculate the min and max values for the axis limits
+    x_min, y_min, z_min = np.min(flock.pos, axis=(0, 1))
+    x_max, y_max, z_max = np.max(flock.pos, axis=(0, 1))
+
     # Create scatter plot for each agent with the same color (blue)
     scatters = [ax.scatter([], [], [], color='blue') for i in range(flock.N_AGENTS)]
 
@@ -115,6 +119,11 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
+
+    # Set axis limits to encapsulate the entire trajectory space
+    ax.set_xlim(x_min, x_max)
+    ax.set_ylim(y_min, y_max)
+    ax.set_zlim(z_min, z_max)
 
     plt.tight_layout()
     plt.gca().set_aspect('equal')

@@ -88,14 +88,14 @@ class Flocking3D:
 
         # Check match
         found = False
-        for _ in range(50):
-            try:
-                T1 = random_spanning_tree(self.G1, seed=SEED)
-                match, T2 = self.check_tree_dynamically(T1, self.G2)
-                if match:
-                    found = True
-                    break
-            except:
+        for a in range(50):
+            T1 = random_spanning_tree(self.G1, seed=SEED)
+            match, T2 = self.check_tree_dynamically(T1, self.G2)
+            if match:
+                found = True
+                break
+            else:
+                print(f"Failed to find a matching tree in attempt {a}.")
                 continue
         
         if found:

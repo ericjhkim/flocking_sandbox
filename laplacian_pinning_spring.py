@@ -90,7 +90,6 @@ class Flocking3D:
         # Check match
         found = False
         for a in range(50):
-            # try:
             T1 = random_spanning_tree(self.G1, seed=SEED)
             match, T2 = self.check_tree_dynamically(T1, self.G2)
             if match:
@@ -99,8 +98,6 @@ class Flocking3D:
             else:
                 print(f"Failed to find a matching tree in attempt {a}.")
                 continue
-            # except:
-            #     continue
         
         if found:
             print("Found a matching tree.")
@@ -142,6 +139,8 @@ class Flocking3D:
         self.pos = [np.array(self.X)]
 
     def update(self, t):
+        self.A1 = self.get_adjacency(self.X)
+        
         U = np.zeros((self.N_AGENTS, 3))
         for i in range(self.N_AGENTS):
             for j in range(self.N_AGENTS):
