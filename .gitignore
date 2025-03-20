@@ -2,3 +2,6 @@ __pycache__
 archive
 venv
 testbench.py
+elastic
+neural
+neat_config_tmp

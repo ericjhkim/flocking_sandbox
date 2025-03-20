@@ -14,11 +14,11 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
     fig = plt.figure(figsize=(10,8))
     ax = fig.add_subplot(111, projection='3d')
 
-    flock.pos = np.array(flock.pos)
+    flock.data["position"] = np.array(flock.data["position"])
 
     # Calculate the min and max values for the axis limits
-    x_min, y_min, z_min = np.min(flock.pos, axis=(0, 1))
-    x_max, y_max, z_max = np.max(flock.pos, axis=(0, 1))
+    x_min, y_min, z_min = np.min(flock.data["position"], axis=(0, 1))
+    x_max, y_max, z_max = np.max(flock.data["position"], axis=(0, 1))
 
     # Create scatter plot for each agent with the same color (blue)
     scatters = [ax.scatter([], [], [], color='blue') for i in range(flock.N_AGENTS)]
@@ -59,15 +59,15 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
         return scatters + tails + texts + connections + subgraph_connections + [time_text]
 
     def update(frame):
-        adjacency_matrix = flock.get_adjacency(flock.pos[frame])
+        adjacency_matrix = flock.data["adjacency"][frame]
 
         for i in range(flock.N_AGENTS):
-            positions = flock.pos[frame, i]
+            positions = flock.data["position"][frame, i]
             scatters[i]._offsets3d = ([positions[0]], [positions[1]], [positions[2]])
 
             # Update tail
             start_frame = max(0, frame - int(1000 / interval))
-            tail_positions = flock.pos[start_frame:frame+1, i]
+            tail_positions = flock.data["position"][start_frame:frame+1, i]
             tails[i].set_data(tail_positions[:, 0], tail_positions[:, 1])
             tails[i].set_3d_properties(tail_positions[:, 2])
 
@@ -84,8 +84,8 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
                         color = 'green'
                     else:
                         color = 'red'                   # If there is no actual connection even when there is supposed to be one
-                    pos_i = flock.pos[frame, i]
-                    pos_j = flock.pos[frame, j]
+                    pos_i = flock.data["position"][frame, i]
+                    pos_j = flock.data["position"][frame, j]
                     subgraph_connections[subgraph_connection_index].set_data([pos_i[0], pos_j[0]], [pos_i[1], pos_j[1]])
                     subgraph_connections[subgraph_connection_index].set_3d_properties([pos_i[2], pos_j[2]])
                     subgraph_connections[subgraph_connection_index].set_color(color)
@@ -100,8 +100,8 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
         for i in range(flock.N_AGENTS):
             for j in range(i + 1, flock.N_AGENTS):
                 if adjacency_matrix[i, j] == 1 and flock.A_T1[i, j] == 0:
-                    pos_i = flock.pos[frame, i]
-                    pos_j = flock.pos[frame, j]
+                    pos_i = flock.data["position"][frame, i]
+                    pos_j = flock.data["position"][frame, j]
                     connections[connection_index].set_data([pos_i[0], pos_j[0]], [pos_i[1], pos_j[1]])
                     connections[connection_index].set_3d_properties([pos_i[2], pos_j[2]])
                 else:
@@ -112,7 +112,7 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
         time_text.set_text(f'Time: {frame * interval / 1000:.2f} s')
         return scatters + tails + texts + connections + subgraph_connections + [time_text]
 
-    num_frames = len(flock.pos)
+    num_frames = len(flock.data["position"])
 
     ani = animation.FuncAnimation(fig, update, frames=num_frames, init_func=init,
                                   interval=interval, blit=False)

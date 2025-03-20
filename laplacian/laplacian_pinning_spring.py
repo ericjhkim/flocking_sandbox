@@ -7,13 +7,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import numpy as np
 from tools import plots, agents
-import random
 
 # Controls
 gif_path = "visualizations/laplacian_pinning_spring/"
 CREATE_GIF = False
 SEED = 1
-np.random.seed(SEED)
 
 # Constants
 SIM_TIME = 10                               # Simulation time in seconds
@@ -28,7 +26,7 @@ def main():
     pins = np.arange(0, N_AGENTS)
 
     # Create flock
-    flock = Flock(2, N_AGENTS, [k1, k2, k3], pins, SEED=SEED)
+    flock = Flock(2, N_AGENTS, [k1, k2, k3], pins, SEED)
 
     # Run simulation
     for t in np.arange(0, SIM_TIME, flock.dt):
@@ -36,12 +34,9 @@ def main():
 
     plots.animate_3d(flock, CREATE_GIF, gif_path)
 
-class Flock(agents.SubgraphAgents):
-    def __init__(self, N_INT, N_AGENTS, gains, pins, SEED=random.seed()):
-        super().__init__(N_INT, N_AGENTS, SEED)
-
-        # Constants
-        self.MAX_VEL = 10.0                                         # Maximum velocity of agents
+class Flock(agents.Agents):
+    def __init__(self, N_INT, N_AGENTS, gains, pins, SEED):
+        super().__init__(N_INT, True, N_AGENTS, SEED, T_VEC=[20,20,0])
 
         # Control gains
         self.k1, self.k2, self.k3 = gains
