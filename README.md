@@ -38,7 +38,7 @@ $$e_v = \frac{1}{N}\sum^N_{i=1}||V^i_T||^2$$
 
 $$e_u = \frac{1}{N}\sum^N_{i=1}\left(\frac{1}{T}\sum^T_{t=0}\left(\frac{||U^i_N||}{||U_{max}||}\right)\right)^2$$
 
-$$e_c = 1\times 10^7^2\text{, if connectivity broken at any epoch; else }0$$
+$$e_c = {1\times 10^7}^2\text{ if connectivity broken at any epoch; else }0$$
 
 <img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/evolution/anim_20250320_163638.gif" style="width:75%;">
 
