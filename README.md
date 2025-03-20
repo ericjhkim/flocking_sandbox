@@ -1,6 +1,11 @@
 # Flocking Sandbox
 
-This is a simulation sandbox for works-in-progress.
+A simulation sandbox for works-in-progress.
+
+### Contents
+1. Laplacian-Pinning Connectivity Maintenance
+2. Laplacian-Pinning with Spring System Connectivity Maintenance
+3. Neuroevolutionary Flocking
 
 ## Showcase
 ### Laplacian-Pinning Connectivity Maintenance ([laplacian_pinning.py](/laplacian/laplacian_pinning.py))
@@ -11,7 +16,7 @@ $$U = \dot{X} = -k_1 L (X-X_{tgt}) - k_2 P (X-X_{tgt})$$
 
 Where $X$ is the $N\times3$ matrix of agents' positions in 3D Euclidean space, $X_{tgt}$ is the $N\times3$ matrix of the agents' final target positions, $L$ is the system's graph Laplacian matrix, $P$ is a diagonal matrix of pins, where $P_{ii} = 1$ for pinning agents and 0 otherwise, and $k_1$ and $k_2$ are gains. The first term accounts for convergence towards the relative positioning of agents in the swarm configuration, and the second term accounts for convergence towards the global frame position.
 
-<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/laplacian_pinning/anim_20250315_152244.gif" style="width:75%;">
+<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/laplacian_pinning/anim_20250320_165330.gif" style="width:75%;">
 
 ### Laplacian-Pinning with Spring System Connectivity Maintenance ([laplacian_pinning_spring.py](/laplacian/laplacian_pinning_spring.py))
 An extension of the above control, this variant of the Laplacian-Pinning adds a spring-dyanmics potential function to experiment with more flexible connectivity behaviour.
@@ -25,7 +30,7 @@ $$U = \ddot{X} = \ddot{X_1} + \ddot{X_2}$$
 
 Where $K$ is a matrix of spring constants, defined as the adjacency matrix for the randomly-generated isomorphic subgraph $T_1$, and $L$ is the natural spring length, set to be the relative distance between two agents in the final target formation $X_{tgt}$.
 
-<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/laplacian_pinning_spring/anim_20250315_154650.gif" style="width:75%;">
+<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/laplacian_pinning_spring/anim_20250320_165554.gif" style="width:75%;">
 
 ### Neuroevolutionary Connectivity Maintenance ([evolve.py -> simulate.py](/evolution/evolve.py))
 Here, the Neuroevolution of Augmenting Topologies (NEAT) algorithm [2] is used to train an artificial neural network (ANN) controller that can be homogeneously and ubiquitously applied to agents in a swarm. The ANN evolves based on the fitness function $f$ described below with gains $k$, swarm size $N$, epochs $T$, position for agent $i$ at epoch $t$ being $X^i_t$, and maximum control value $U_{max}$. The fitness minimizes connectivity error $e_c$, achieve position $e_p$ and velocity $e_v$ tracking, and minimize control effort $e_u$.
