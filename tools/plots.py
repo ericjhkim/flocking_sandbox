@@ -8,131 +8,170 @@ from mpl_toolkits.mplot3d import art3d
 import matplotlib.animation as animation
 from datetime import datetime
 import networkx as nx
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from scipy.spatial.transform import Rotation as R
 
 #%% Plotting and Visualization
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import animation
+from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from scipy.spatial.transform import Rotation as R
+from datetime import datetime
+
 def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
-    fig = plt.figure(figsize=(10,8))
+    fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
 
-    flock.data["position"] = np.array(flock.data["position"])
+    position = np.array(flock.data["position"])
+    N_AGENTS = flock.N_AGENTS
+    has_pose = "pose" in flock.data
+    if has_pose:
+        pose = np.array(flock.data["pose"])  # rotation vectors
 
-    # Calculate the min and max values for the axis limits
-    x_min, y_min, z_min = np.min(flock.data["position"], axis=(0, 1))
-    x_max, y_max, z_max = np.max(flock.data["position"], axis=(0, 1))
+    x_min, y_min, z_min = np.min(position, axis=(0, 1))
+    x_max, y_max, z_max = np.max(position, axis=(0, 1))
 
-    # Create scatter plot for each agent with the same color (blue)
-    scatters = [ax.scatter([], [], [], color='blue') for i in range(flock.N_AGENTS)]
-
-    # Plot target positions with red 'x' markers
     ax.scatter(flock.X_tgt[:, 0], flock.X_tgt[:, 1], flock.X_tgt[:, 2], color='red', marker='x', label='Target')
-
     time_text = ax.text2D(0.05, 0.95, '', transform=ax.transAxes)
 
-    # Initialize lines for tails
-    tails = [ax.plot([], [], [], color='blue', alpha=0.5)[0] for _ in range(flock.N_AGENTS)]
+    tails = [ax.plot([], [], [], color='blue', alpha=0.5)[0] for _ in range(N_AGENTS)]
+    texts = [ax.text(0, 0, 0, str(i), color='black') for i in range(N_AGENTS)]
+    connections = [ax.plot([], [], [], 'k--', alpha=0.3)[0] for _ in range(N_AGENTS ** 2)]
+    subgraph_connections = [ax.plot([], [], [], 'k--', alpha=0.3)[0] for _ in range(N_AGENTS ** 2)]
 
-    # Initialize text for agent numbers
-    texts = [ax.text(0, 0, 0, str(i), color='black', rotation=90) for i in range(flock.N_AGENTS)]
+    if has_pose:
+        prisms = [Poly3DCollection([], color='blue', alpha=1.0) for _ in range(N_AGENTS)]
+        for prism in prisms:
+            ax.add_collection3d(prism)
+    else:
+        scatters = [ax.scatter([], [], [], color='blue') for _ in range(N_AGENTS)]
 
-    # Initialize lines for connectivity
-    connections = [ax.plot([], [], [], 'k--', alpha=0.3)[0] for _ in range(flock.N_AGENTS * flock.N_AGENTS)]
-
-    # Initialize lines for subgraph connectivity
-    subgraph_connections = [ax.plot([], [], [], 'k--', alpha=0.3)[0] for _ in range(flock.N_AGENTS * flock.N_AGENTS)]
+    def create_prism_at(pos, rotvec, scale=1.0, height=0.1):
+        base = np.array([
+            [scale, 0, 0],
+            [-scale * 0.3, 0, scale * 0.3],
+            [-scale * 0.3, 0, -scale * 0.3]
+        ])
+        top = base + np.array([0, height, 0])
+        vertices = np.vstack((base, top))
+        R_matrix = R.from_rotvec(rotvec).as_matrix()
+        rotated = vertices @ R_matrix.T + pos
+        return [
+            [rotated[0], rotated[1], rotated[2]],
+            [rotated[3], rotated[4], rotated[5]],
+            [rotated[0], rotated[1], rotated[4], rotated[3]],
+            [rotated[1], rotated[2], rotated[5], rotated[4]],
+            [rotated[2], rotated[0], rotated[3], rotated[5]],
+        ]
 
     def init():
-        for scatter in scatters:
-            scatter._offsets3d = ([], [], [])
+        artists = []
         for tail in tails:
             tail.set_data([], [])
             tail.set_3d_properties([])
+            artists.append(tail)
         for text in texts:
             text.set_position((0, 0))
-            text.set_3d_properties(0, 'z')
-        for connection in connections:
-            connection.set_data([], [])
-            connection.set_3d_properties([])
-        for subgraph_connection in subgraph_connections:
-            subgraph_connection.set_data([], [])
-            subgraph_connection.set_3d_properties([])
+            text.set_3d_properties(0)
+            artists.append(text)
+        for line in connections + subgraph_connections:
+            line.set_data([], [])
+            line.set_3d_properties([])
+            artists.append(line)
+        if has_pose:
+            for prism in prisms:
+                prism.set_verts([])
+                artists.append(prism)
+        else:
+            for scatter in scatters:
+                scatter._offsets3d = ([], [], [])
+                artists.append(scatter)
         time_text.set_text('')
-        return scatters + tails + texts + connections + subgraph_connections + [time_text]
+        artists.append(time_text)
+        return artists
 
     def update(frame):
-        adjacency_matrix = flock.data["adjacency"][frame]
+        adj = flock.data["adjacency"][frame]
+        artists = []
 
-        for i in range(flock.N_AGENTS):
-            positions = flock.data["position"][frame, i]
-            scatters[i]._offsets3d = ([positions[0]], [positions[1]], [positions[2]])
+        for i in range(N_AGENTS):
+            pos = position[frame, i]
 
-            # Update tail
-            start_frame = max(0, frame - int(1000 / interval))
-            tail_positions = flock.data["position"][start_frame:frame+1, i]
-            tails[i].set_data(tail_positions[:, 0], tail_positions[:, 1])
-            tails[i].set_3d_properties(tail_positions[:, 2])
+            # Tail
+            start = max(0, frame - int(1000 / interval))
+            tail_pos = position[start:frame+1, i]
+            tails[i].set_data(tail_pos[:, 0], tail_pos[:, 1])
+            tails[i].set_3d_properties(tail_pos[:, 2])
+            artists.append(tails[i])
 
-            # Update text position
-            texts[i].set_position((positions[0], positions[1]))
-            texts[i].set_3d_properties(positions[2] + 0.1, 'z')  # Slightly above the agent
+            # Label
+            texts[i].set_position((pos[0], pos[1]))
+            texts[i].set_3d_properties(pos[2] + 1.0)
+            artists.append(texts[i])
 
-        # Update subgraph connectivity lines
-        subgraph_connection_index = 0
-        for i in range(flock.N_AGENTS):
-            for j in range(i + 1, flock.N_AGENTS):
-                if flock.A_T1[i, j] == 1:               # If there is supposed to be a connection according to the subgraph
-                    if adjacency_matrix[i, j] == 1:     # If there actually is a connection
-                        color = 'green'
-                    else:
-                        color = 'red'                   # If there is no actual connection even when there is supposed to be one
-                    pos_i = flock.data["position"][frame, i]
-                    pos_j = flock.data["position"][frame, j]
-                    subgraph_connections[subgraph_connection_index].set_data([pos_i[0], pos_j[0]], [pos_i[1], pos_j[1]])
-                    subgraph_connections[subgraph_connection_index].set_3d_properties([pos_i[2], pos_j[2]])
-                    subgraph_connections[subgraph_connection_index].set_color(color)
-                    subgraph_connections[subgraph_connection_index].set_alpha(0.3)
-                else:                                   # Ignore if there isn't even supposed to be a connection
-                    subgraph_connections[subgraph_connection_index].set_data([], [])
-                    subgraph_connections[subgraph_connection_index].set_3d_properties([])
-                subgraph_connection_index += 1
+            # Pose logic
+            if has_pose:
+                rotvec = pose[frame, i]
+                faces = create_prism_at(pos, rotvec)
+                prisms[i].set_verts(faces)
+                artists.append(prisms[i])
+            else:
+                scatters[i]._offsets3d = ([pos[0]], [pos[1]], [pos[2]])
+                artists.append(scatters[i])
 
-        # Update connectivity lines
-        connection_index = 0
-        for i in range(flock.N_AGENTS):
-            for j in range(i + 1, flock.N_AGENTS):
-                if adjacency_matrix[i, j] == 1 and flock.A_T1[i, j] == 0:
-                    pos_i = flock.data["position"][frame, i]
-                    pos_j = flock.data["position"][frame, j]
-                    connections[connection_index].set_data([pos_i[0], pos_j[0]], [pos_i[1], pos_j[1]])
-                    connections[connection_index].set_3d_properties([pos_i[2], pos_j[2]])
+        # Subgraph connections
+        k = 0
+        for i in range(N_AGENTS):
+            for j in range(i + 1, N_AGENTS):
+                line = subgraph_connections[k]
+                if flock.A_T1[i, j] == 1:
+                    p1 = position[frame, i]
+                    p2 = position[frame, j]
+                    line.set_data([p1[0], p2[0]], [p1[1], p2[1]])
+                    line.set_3d_properties([p1[2], p2[2]])
+                    line.set_color('green' if adj[i, j] == 1 else 'red')
                 else:
-                    connections[connection_index].set_data([], [])
-                    connections[connection_index].set_3d_properties([])
-                connection_index += 1
+                    line.set_data([], [])
+                    line.set_3d_properties([])
+                artists.append(line)
+                k += 1
 
-        time_text.set_text(f'Time: {frame * interval / 1000:.2f} s')
-        return scatters + tails + texts + connections + subgraph_connections + [time_text]
+        # Extra edges
+        k = 0
+        for i in range(N_AGENTS):
+            for j in range(i + 1, N_AGENTS):
+                line = connections[k]
+                if adj[i, j] == 1 and flock.A_T1[i, j] == 0:
+                    p1 = position[frame, i]
+                    p2 = position[frame, j]
+                    line.set_data([p1[0], p2[0]], [p1[1], p2[1]])
+                    line.set_3d_properties([p1[2], p2[2]])
+                else:
+                    line.set_data([], [])
+                    line.set_3d_properties([])
+                artists.append(line)
+                k += 1
 
-    num_frames = len(flock.data["position"])
+        time_text.set_text(f"Time: {frame * interval / 1000:.2f} s")
+        artists.append(time_text)
+        return artists
 
+    num_frames = len(position)
     ani = animation.FuncAnimation(fig, update, frames=num_frames, init_func=init,
                                   interval=interval, blit=False)
-        
+
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
     ax.set_zlabel('Z')
-
-    # Set axis limits to encapsulate the entire trajectory space
     buffer = 2
-    ax.set_xlim(x_min-buffer, x_max+buffer)
-    ax.set_ylim(y_min-buffer, y_max+buffer)
-    ax.set_zlim(z_min-buffer, z_max+buffer)
-
+    ax.set_xlim(x_min - buffer, x_max + buffer)
+    ax.set_ylim(y_min - buffer, y_max + buffer)
+    ax.set_zlim(z_min - buffer, z_max + buffer)
     plt.tight_layout()
-    plt.gca().set_aspect('equal')
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = gif_path + f"anim_{timestamp}.gif"
-
     if CREATE_GIF:
         ani.save(path, writer='pillow', fps=1000/interval)
 

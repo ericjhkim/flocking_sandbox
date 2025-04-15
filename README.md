@@ -47,6 +47,25 @@ $$e_c = {1\times 10^7}^2\text{ if connectivity broken at any epoch; else }0$$
 
 <img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/evolution/anim_20250320_163638.gif" style="width:75%;">
 
+### Geometric PD Connectivity Maintenance ([holonomic.py](/geometric/holonomic.py))
+A simple proportional-derivative (PD) controller was implemented using geometric control theory on Special Euclidean Group SE(3) for holonomic, double integrator model agents. This implementation also uses the subgraph isomorphism technique in [1] to identify a matching spanning tree between two swarm position configurations. The control law is described below, with tunable gains $k_p$ and $k_d$.
+
+The relative configuration $g_{ti}$ between the target pose $t$ and the agent $i$'s pose is:
+$$g_{ti} = g^{-1}_t g_i$$
+
+The logarithmic map transforms a Lie group element in SE(3) into an element of its Lie algebra se(3):
+$$\hat{X} = log_{SE(3)}(g_{ti})$$
+
+In the holonomic case, the relative velocity can be expressed as a simple difference. In this implementation, the target velocity is set to be zero:
+$$\xi_{ti} = \xi_i - \xi_t$$
+$$\xi_{ti} = \xi_i$$
+
+Finally, the control law (vectorized) is:
+$$u = -k_p \hat{X}^\vee - k_d \xi_{ti}$$
+
+<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/evolution/anim_20250320_163638.gif" style="width:75%;">
+_The initial and final attitudes are randomly set, hence the strange pose movements._
+
 ## References
   1. Hamaoui, M. (2024). *Connectivity Maintenance through Unlabeled Spanning Tree Matching*. J Intell Robot Syst 110, 15 [doi:10.1007/s10846-024-02048-9](https://doi.org/10.1007/s10846-024-02048-9)
   2. Stanley, K. O., & Miikkulainen, R. (2002). *Evolving neural networks through augmenting topologies*. Evolutionary computation, 10(2), 99-127. [doi:10.1162/106365602320169811](https://doi.org/10.1162/106365602320169811)

@@ -34,13 +34,14 @@ def main():
 
 	plots.animate_3d(flock, CREATE_GIF, gif_path)
 
-class Flock(agents.SubgraphAgents):
+class Flock(agents.Agents):
 	def __init__(self, N_INT, N_AGENTS, gains, pins, SEED):
-		super().__init__(N_INT, N_AGENTS, SEED)
+		super().__init__(N_INT, True, N_AGENTS, SEED, T_VEC=[20,20,0])
 
+		# These functions are necessary, because the state X (and V) contains [3d pose, 3d position]
 		self.X = self.generate_3d_pose()
 		self.V = np.zeros((self.N_AGENTS, 6))
-		self.X2 = self.generate_3d_pose(translation=[20,20,0])
+		self.X2 = self.generate_3d_pose(translation=self.T_VEC)
 
 		# Control gains
 		self.k_p, self.k_d = gains
@@ -60,20 +61,24 @@ class Flock(agents.SubgraphAgents):
 		self.X_tgt = self.X_goal[:, 3:]
 		
 		# Data storage
-		self.pos = [np.array(self.X[:, 3:])]
-		self.vel = [np.array(self.V)]
+		self.data = {
+			"pose": [np.array(self.X)[:,:3]],
+			"position": [np.array(self.X)[:,3:]],
+			"velocity": [np.array(self.V)[:,3:]],
+			"adjacency": [self.get_adjacency(self.X[:,3:])],
+			"control": [self.U]
+		}
 
 	def update(self, t):
 		# Compute laplacian
-		A = self.get_adjacency(self.X[:, 3:])
-		L = self.compute_laplacian(self.get_adjacency(self.X[:, 3:]))
+		self.A1 = self.get_adjacency(self.X[:, 3:])
 
 		# Update dynamics
 		for i in range(self.N_AGENTS): 
 
-			U = self.control_law(i)
+			self.U = self.control(i)
 			
-			self.V[i] += U * self.dt
+			self.V[i] += self.U * self.dt
 			v_hat = hat_map_SE3(self.V[i])
 			self.X[i] = out_SE3(in_SE3(self.X[i]) @ exp_map_SE3(v_hat * self.dt))
 
@@ -83,18 +88,18 @@ class Flock(agents.SubgraphAgents):
 		# Save data
 		self.save_data()
 
-	def control_law(self, i):
+	def control(self, i):
 		g0i = np.linalg.inv(in_SE3(self.X_goal[i])) @ in_SE3(self.X[i])
 
-		# Relative position
+		# Relative pose
 		X_hat = log_map_SE3(g0i)  # Logarithm map for se(3)
-		rel_position = vee_map_SE3(X_hat)  # Vectorize
+		rel_pose = vee_map_SE3(X_hat)  # Vectorize
 
 		# Relative velocity
 		rel_velocity = self.V[i] - np.zeros(6)
 
 		# Compute control inputs
-		u = -self.k_p * rel_position - self.k_d * rel_velocity
+		u = -self.k_p * rel_pose - self.k_d * rel_velocity
 
 		return u
 	
@@ -145,8 +150,11 @@ class Flock(agents.SubgraphAgents):
 		"""
 		Store state in data storage object
 		"""
-		self.pos.append(np.array(self.X)[:, 3:])
-		self.vel.append(np.array(self.V)[:, 3:])
+		self.data["pose"].append(np.array(self.X)[:,:3])
+		self.data["position"].append(np.array(self.X)[:,3:])
+		self.data["velocity"].append(np.array(self.V)[:,3:])
+		self.data["adjacency"].append(self.A1)
+		self.data["control"].append(self.U)
 
 def in_SE3(pose):
 	"""
