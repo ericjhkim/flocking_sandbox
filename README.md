@@ -6,6 +6,7 @@ A simulation sandbox for works-in-progress.
 1. Laplacian-Pinning Connectivity Maintenance
 2. Laplacian-Pinning with Spring System Connectivity Maintenance
 3. Neuroevolutionary Flocking
+4. Geometric PD Control
 
 ## Showcase
 ### Laplacian-Pinning Connectivity Maintenance ([laplacian_pinning.py](/laplacian/laplacian_pinning.py))
@@ -63,7 +64,8 @@ $$\xi_{ti} = \xi_i$$
 Finally, the control law (vectorized) is:
 $$u = -k_p \hat{X}^\vee - k_d \xi_{ti}$$
 
-<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/evolution/anim_20250415_132926.gif" style="width:75%;">
+<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/geometric/anim_20250415_132926.gif" style="width:75%;">
+
 _The initial and final attitudes are randomly set, hence the strange pose movements._
 
 ## References
