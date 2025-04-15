@@ -20,7 +20,7 @@ class Agents(metaclass=ABCMeta):
         self.SEED = SEED                                    # Seed
         if self.SEED:
             np.random.seed(self.SEED)                       # Set seed
-            T_VEC = [20,20,0]                               # Reset translation vector
+            # T_VEC = [20,20,0]                               # Reset translation vector
         else:
             np.random.seed()                                # Random seed
         self.D_MIN = D_MIN                                  # Minimum distance between agents (for random generation)

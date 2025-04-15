@@ -1,5 +1,6 @@
 """
 This script simulates the flocking behavior of agents in 3D space using the holonomic model.
+The control law is based on global information.
 """
 import sys
 import os
@@ -10,7 +11,7 @@ from tools import plots, agents
 from scipy.linalg import expm, logm
 
 # Controls
-gif_path = "visualizations/geometric/"
+gif_path = "visualizations/geometric_relative/"
 CREATE_GIF = False
 SEED = 1
 
@@ -18,15 +19,17 @@ SEED = 1
 SIM_TIME = 10                               # Simulation time in seconds
 N_AGENTS = 8                                # Number of agents
 
-k_p = 1.0                                   # Target position tracking gain
+k_r = 1.0                                   # Relative position tracking gain
+k_p = 1.0                                   # Pinning gain
 k_d = 2.0                                   # Velocity damping gain
 
 def main():
 	# Set pin(s)
 	pins = np.arange(0, N_AGENTS)
+	pins = [0,2,7]
 
 	# Create an instance of the class
-	flock = Flock(2, N_AGENTS, [k_p, k_d], pins, SEED)
+	flock = Flock(2, N_AGENTS, [k_r, k_p, k_d], pins, SEED)
 
 	# Run animation for 3D
 	for t in np.arange(0, SIM_TIME, flock.dt):
@@ -44,7 +47,7 @@ class Flock(agents.Agents):
 		self.X2 = self.generate_3d_pose(translation=self.T_VEC)
 
 		# Control gains
-		self.k_p, self.k_d = gains
+		self.k_r, self.k_p, self.k_d = gains
 
 		# Pins and global position
 		self.pins = pins
@@ -87,19 +90,30 @@ class Flock(agents.Agents):
 
 		# Save data
 		self.save_data()
-
+	
 	def control(self, i):
-		g0i = np.linalg.inv(in_SE3(self.X_goal[i])) @ in_SE3(self.X[i])
+		"""
+		This is a Laplacian-based control law for a pinned holonomic system.
+		"""
+		u = np.zeros(6)
+		
+        # Relative term (formation control)
+		for j in range(self.N_AGENTS):
+			if j != i and self.A1[i, j] == 1:
+				gij = np.linalg.inv(in_SE3(self.X[i])) @ in_SE3(self.X[j])
+				gij_des = np.linalg.inv(in_SE3(self.X_goal[i])) @ in_SE3(self.X_goal[j])
+				gij_des_inv = np.linalg.inv(gij_des)  # desired relative pose
+				error = log_map_SE3(gij @ gij_des_inv)
+				u += k_r * vee_map_SE3(error)
 
-		# Relative pose
-		X_hat = log_map_SE3(g0i)  # Logarithm map for se(3)
-		rel_pose = vee_map_SE3(X_hat)  # Vectorize
+        # Pinning term (global position)
+		if self.P[i, i] == 1:
+			gi0 = np.linalg.inv(in_SE3(self.X[i])) @ in_SE3(self.X_goal[i])
+			error_i0 = log_map_SE3(gi0)
+			u += k_p * vee_map_SE3(error_i0)
 
-		# Relative velocity
-		rel_velocity = self.V[i] - np.zeros(6)
-
-		# Compute control inputs
-		u = -self.k_p * rel_pose - self.k_d * rel_velocity
+        # Velocity damping
+		u -= k_d * self.V[i]
 
 		return u
 	
