@@ -70,7 +70,7 @@ $$u = -k_p \hat{X}^\vee - k_d \xi_{ti}$$
 
 <img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/geometric/anim_20250415_132926.gif" style="width:75%;">
 
-_The initial and final attitudes are randomly set, hence the strange pose movements._
+_The initial and final attitudes are randomly set, hence the seemingly arbitrary pose movements._
 
 ## References
   1. Hamaoui, M. (2024). *Connectivity Maintenance through Unlabeled Spanning Tree Matching*. J Intell Robot Syst 110, 15 [doi:10.1007/s10846-024-02048-9](https://doi.org/10.1007/s10846-024-02048-9)
