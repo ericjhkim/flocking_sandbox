@@ -5,11 +5,11 @@ A simulation sandbox for works-in-progress.
 ### Contents
 Ordered by implementation recency:
 
-5. Artificial Potential Function Control
-4. Geometric PD Control
+1. Artificial Potential Function Control
+2. Geometric PD Control
 3. Neuroevolutionary Flocking
-2. Laplacian-Pinning with Spring System Connectivity Maintenance
-1. Laplacian-Pinning Connectivity Maintenance
+4. Laplacian-Pinning with Spring System Connectivity Maintenance
+5. Laplacian-Pinning Connectivity Maintenance
 
 ## Showcase
 ### Artificial Potential Function Control ([potential_explorer.py](/potentials/potential_explorer.py))
