@@ -11,23 +11,15 @@ import networkx as nx
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from scipy.spatial.transform import Rotation as R
 
-#%% Plotting and Visualization
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import animation
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from scipy.spatial.transform import Rotation as R
-from datetime import datetime
-
 def animate_3d(
-    flock,
-    CREATE_GIF,
-    gif_path,
-    interval=100,
-    follow=False,                 # off by default for backward compatibility
-    follow_padding=2.0,           # padding around the tight bounds (units of your sim)
-    follow_smooth=None            # None = no smoothing; or set to 0<alpha<=1 (EMA)
-):
+        flock,
+        CREATE_GIF,
+        gif_path,
+        interval=100,
+        follow=False,                 # off by default for backward compatibility
+        follow_padding=2.0,           # padding around the tight bounds (units of your sim)
+        follow_smooth=None            # None = no smoothing; or set to 0<alpha<=1 (EMA)
+    ):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
 

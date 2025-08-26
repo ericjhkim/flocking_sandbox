@@ -39,7 +39,7 @@ def dict_to_config(file_path, config_dict):
             file.write("\n")  # Add a blank line after each section
 
 def config_to_dict(**kwargs):
-    with open("evolution/neat_config", "r") as f:
+    with open("gainvolution/neat_config", "r") as f:
         config_lines = [x for x in f.readlines() if x != "\n"]
 
     neat_dict = {}
@@ -110,7 +110,6 @@ def plot_stats(statistics, ylog=False, view=False, filename='avg_fitness.svg'):
         plt.show()
 
     plt.close()
-
 
 def plot_spikes(spikes, view=False, filename=None, title=None):
     """ Plots the trains for a single spiking neuron. """

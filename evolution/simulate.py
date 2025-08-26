@@ -10,7 +10,7 @@ import pickle
 import neat
 from tools import plots
 from evolve import Flock
-import evolution.neat_tools as neat_tools
+import tools.neat_tools as neat_tools
 
 # Loading parameters
 files = [x for x in os.listdir("evolution/networks/") if "." not in x and x != "neat_config_tmp"]

@@ -10,7 +10,7 @@ import neat
 import numpy as np
 from tools import plots, agents
 from time import process_time, perf_counter
-import evolution.neat_tools as neat_tools
+import tools.neat_tools as neat_tools
 from datetime import datetime
 
 # Save parameters
@@ -189,6 +189,9 @@ class Flock(agents.Agents):
         """
         Check if the goal has been reached or unforgiveable penalties have occurred.
         """
+        if len(self.data["position"]) < 1:
+            return
+
         position_error = np.mean( (np.linalg.norm(np.array(self.data["position"][-1]) - np.array(self.X_tgt), axis=1) / np.linalg.norm(np.array(self.data["position"][0]) - np.array(self.X_tgt), axis=1))**2 )
         velocity_error = np.mean( np.linalg.norm(self.data["velocity"][-1], axis=1)**2 )
 

@@ -10,6 +10,7 @@ from networkx.algorithms import isomorphism
 import itertools
 from abc import ABCMeta, abstractmethod
 import random
+import environment
 
 class Agents(metaclass=ABCMeta):
     def __init__(self, N_INT, SUBGRAPHS, N_AGENTS, SEED, D_MIN=5, D_MAX=25, R_MAX=30, dt=0.1, T_VEC=[0,0,0], VERBOSE=True):
@@ -29,6 +30,8 @@ class Agents(metaclass=ABCMeta):
         self.dt = dt                                        # Time step
         self.T_VEC = T_VEC                                  # Translation vector
         self.VERBOSE = VERBOSE                              # Enable/disable print statements
+
+        self.ENV = environment.Environment()                # Environment object
 
         # Set dynamics based on the number of integrators
         if N_INT == 1:
