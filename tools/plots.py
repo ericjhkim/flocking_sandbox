@@ -19,20 +19,31 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from scipy.spatial.transform import Rotation as R
 from datetime import datetime
 
-def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
+def animate_3d(
+    flock,
+    CREATE_GIF,
+    gif_path,
+    interval=100,
+    follow=False,                 # off by default for backward compatibility
+    follow_padding=2.0,           # padding around the tight bounds (units of your sim)
+    follow_smooth=None            # None = no smoothing; or set to 0<alpha<=1 (EMA)
+):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
 
-    position = np.array(flock.data["position"])
+    position = np.array(flock.data["position"])  # shape: (T, N, 3)
     N_AGENTS = flock.N_AGENTS
     has_pose = "pose" in flock.data
     if has_pose:
-        pose = np.array(flock.data["pose"])  # rotation vectors
+        pose = np.array(flock.data["pose"])  # rotation vectors, shape: (T, N, 3)
 
+    # Static world bounds (used if follow=False or as initial/safety bounds)
     x_min, y_min, z_min = np.min(position, axis=(0, 1))
     x_max, y_max, z_max = np.max(position, axis=(0, 1))
 
-    ax.scatter(flock.X_tgt[:, 0], flock.X_tgt[:, 1], flock.X_tgt[:, 2], color='red', marker='x', label='Target')
+    if hasattr(flock, 'X_tgt'):
+        ax.scatter(flock.X_tgt[:, 0], flock.X_tgt[:, 1], flock.X_tgt[:, 2], color='red', marker='x', label='Target')
+
     time_text = ax.text2D(0.05, 0.95, '', transform=ax.transAxes)
 
     tails = [ax.plot([], [], [], color='blue', alpha=0.5)[0] for _ in range(N_AGENTS)]
@@ -47,6 +58,7 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
     else:
         scatters = [ax.scatter([], [], [], color='blue') for _ in range(N_AGENTS)]
 
+    # === Helpers for prisms ===
     def create_prism_at(pos, rotvec, scale=1.0, height=0.1):
         base = np.array([
             [scale, 0, 0],
@@ -64,6 +76,49 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
             [rotated[1], rotated[2], rotated[5], rotated[4]],
             [rotated[2], rotated[0], rotated[3], rotated[5]],
         ]
+
+    # === Camera-follow state (for smoothing) ===
+    # Maintain exponentially-smoothed bounds if follow_smooth is set (0 < alpha <= 1).
+    # If None, jump the bounds each frame (no smoothing).
+    if follow and (follow_smooth is not None):
+        alpha = float(follow_smooth)
+        alpha = max(0.0, min(1.0, alpha))
+    else:
+        alpha = None
+
+    # initialize smoothed bounds to the first frame's tight bounds (or static world bounds)
+    def tight_bounds_for_frame(f):
+        p = position[f]  # shape (N, 3)
+        # If any NaNs/Infs slip in, guard them by filtering finite entries only
+        finite = np.isfinite(p).all(axis=1)
+        if not np.any(finite):
+            return (x_min, x_max, y_min, y_max, z_min, z_max)
+        p = p[finite]
+        t_xmin, t_ymin, t_zmin = np.min(p, axis=0)
+        t_xmax, t_ymax, t_zmax = np.max(p, axis=0)
+
+        # Add padding and avoid zero-size ranges
+        pad = float(follow_padding)
+        eps = 1e-6
+        if t_xmax - t_xmin < eps:
+            t_xmin -= pad * 0.5
+            t_xmax += pad * 0.5
+        if t_ymax - t_ymin < eps:
+            t_ymin -= pad * 0.5
+            t_ymax += pad * 0.5
+        if t_zmax - t_zmin < eps:
+            t_zmin -= pad * 0.5
+            t_zmax += pad * 0.5
+
+        return (t_xmin - pad, t_xmax + pad,
+                t_ymin - pad, t_ymax + pad,
+                t_zmin - pad, t_zmax + pad)
+
+    if follow:
+        tb = tight_bounds_for_frame(0)
+        sxmin, sxmax, symin, symax, szmin, szmax = tb
+    else:
+        sxmin, sxmax, symin, symax, szmin, szmax = x_min, x_max, y_min, y_max, z_min, z_max
 
     def init():
         artists = []
@@ -89,12 +144,21 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
                 artists.append(scatter)
         time_text.set_text('')
         artists.append(time_text)
+
+        # Set initial limits
+        ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
+        ax.set_xlim(sxmin, sxmax)
+        ax.set_ylim(symin, symax)
+        ax.set_zlim(szmin, szmax)
         return artists
 
     def update(frame):
+        nonlocal sxmin, sxmax, symin, symax, szmin, szmax
+
         adj = flock.data["adjacency"][frame]
         artists = []
 
+        # Draw agents
         for i in range(N_AGENTS):
             pos = position[frame, i]
 
@@ -110,7 +174,7 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
             texts[i].set_3d_properties(pos[2] + 1.0)
             artists.append(texts[i])
 
-            # Pose logic
+            # Pose or scatter
             if has_pose:
                 rotvec = pose[frame, i]
                 faces = create_prism_at(pos, rotvec)
@@ -153,21 +217,48 @@ def animate_3d(flock, CREATE_GIF, gif_path, interval=100):
                 artists.append(line)
                 k += 1
 
+        # Update time text
         time_text.set_text(f"Time: {frame * interval / 1000:.2f} s")
         artists.append(time_text)
+
+        # === Camera follow ===
+        if follow:
+            txmin, txmax, tymin, tymax, tzmin, tzmax = tight_bounds_for_frame(frame)
+
+            if alpha is None:
+                # No smoothing: jump to tight bounds
+                sxmin, sxmax = txmin, txmax
+                symin, symax = tymin, tymax
+                szmin, szmax = tzmin, tzmax
+            else:
+                # Exponential moving average on bounds
+                sxmin = alpha * txmin + (1 - alpha) * sxmin
+                sxmax = alpha * txmax + (1 - alpha) * sxmax
+                symin = alpha * tymin + (1 - alpha) * symin
+                symax = alpha * tymax + (1 - alpha) * symax
+                szmin = alpha * tzmin + (1 - alpha) * szmin
+                szmax = alpha * tzmax + (1 - alpha) * szmax
+
+            # Apply updated limits
+            ax.set_xlim(sxmin, sxmax)
+            ax.set_ylim(symin, symax)
+            ax.set_zlim(szmin, szmax)
+
         return artists
 
     num_frames = len(position)
-    ani = animation.FuncAnimation(fig, update, frames=num_frames, init_func=init,
-                                  interval=interval, blit=False)
+    ani = animation.FuncAnimation(
+        fig, update, frames=num_frames, init_func=init, interval=interval, blit=False
+    )
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    buffer = 2
-    ax.set_xlim(x_min - buffer, x_max + buffer)
-    ax.set_ylim(y_min - buffer, y_max + buffer)
-    ax.set_zlim(z_min - buffer, z_max + buffer)
+    # Static limits if not following
+    if not follow:
+        ax.set_xlabel('X'); ax.set_ylabel('Y'); ax.set_zlabel('Z')
+        buffer = 2
+        ax.set_xlim(x_min - buffer, x_max + buffer)
+        ax.set_ylim(y_min - buffer, y_max + buffer)
+        ax.set_zlim(z_min - buffer, z_max + buffer)
+
     plt.tight_layout()
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")

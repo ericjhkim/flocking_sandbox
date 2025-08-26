@@ -48,10 +48,10 @@ class Agents(metaclass=ABCMeta):
 
         # Data storage
         self.data = {
-            "position": [np.array(self.X)],
-            "velocity": [np.array(self.V)],
-            "adjacency": [self.get_adjacency(self.X)],
-            "control": [self.U]
+            "position": [],
+            "velocity": [],
+            "adjacency": [],
+            "control": []
         }
 
     @abstractmethod
