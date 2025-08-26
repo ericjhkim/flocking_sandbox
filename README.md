@@ -4,6 +4,7 @@ A simulation sandbox for works-in-progress.
 
 ### Contents
 Ordered by implementation recency:
+
 5. Artificial Potential Function Control
 4. Geometric PD Control
 3. Neuroevolutionary Flocking
