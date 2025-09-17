@@ -28,7 +28,7 @@ def animate_3d(
     ax2d = fig.add_subplot(122)                   # 2D plot on the right
 
     # 2D plot ------------------------------------------------------------------------------------
-    x = np.arange(0, 10, 0.1)
+    x = np.arange(0, 10, 0.01)
     y = flock.potential.get_function(x)
 
     r0 = flock.potential.params.get('r0', 1.0)
@@ -36,6 +36,8 @@ def animate_3d(
     ax2d.plot(x, y, label='Potential $\phi(r)$')
 
     inter_agent_point = ax2d.scatter([], [], color='black', zorder=12)
+
+    ax2d.set_ylim(-2.0, 10.0)
 
     ax2d.set_xlabel('Inter-Agent Distance $r$')
     ax2d.set_ylabel('Value')

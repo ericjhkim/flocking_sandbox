@@ -20,7 +20,7 @@ class LennardJones(Potential):
         r0 = self.params.get('r0', 1.0)
         eps = self.eps
 
-        p = (-12*a/((r - r0)**13 + eps) + 6*b/((r - r0)**7 + eps)) * (x_i - x_j)/(r + eps) - 0.5*(v_i - v_j)
+        p = -(-12*a/((r - r0)**13 + eps) + 6*b/((r - r0)**7 + eps)) * (x_i - x_j)/(r + eps) - 0.5*(v_i - v_j)
         return p
 
     def get_function(self, z):
@@ -62,7 +62,7 @@ class Morse(Potential):
         r0 = self.params.get('r0', 1.0)    # equilibrium distance
         eps = self.eps
 
-        p = 2*a*D*(1 - np.exp(-a*(r - r0))) * np.exp(-a*(r - r0)) * (x_i - x_j)/(r + eps) - 0.5*(v_i - v_j)
+        p = -2*a*D*(1 - np.exp(-a*(r - r0))) * np.exp(-a*(r - r0)) * (x_i - x_j)/(r + eps) - 0.5*(v_i - v_j)
         return p
 
     def get_function(self, z):

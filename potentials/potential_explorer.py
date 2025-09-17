@@ -12,19 +12,21 @@ from potentials import POTENTIALS
 from init_conditions import INIT_FUNCS
 
 # Controls
-gif_path = "visualizations/potentials/quadratic_"
-CREATE_GIF = True
+gif_path = "visualizations/potentials/lennardjones_"
+CREATE_GIF = False
+SEED = np.random.randint(0, 1e6)
 SEED = 3
+print(SEED)
 
 # Constants
 SIM_TIME = 5                               # Simulation time in seconds
 N_AGENTS = 2                                # Number of agents
 
-potential_name = "quadratic"
+potential_name = "lennard_jones"
 
 def main():
     init_func = INIT_FUNCS[potential_name]
-    X, V, params = init_func(N_AGENTS, SEED)
+    X, V, params = init_func(N_AGENTS, SEED, min_dist=3, max_dist=3.5)
 
     potential_class = POTENTIALS[potential_name]
     potential_obj = potential_class(**params)
