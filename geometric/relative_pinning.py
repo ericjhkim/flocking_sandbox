@@ -1,6 +1,6 @@
 """
 This script simulates the flocking behavior of agents in 3D space using the holonomic model.
-The control law is based on global information.
+The control law is based on relative formation and global position.
 """
 import sys
 import os

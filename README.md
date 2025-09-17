@@ -21,7 +21,7 @@ The following potentials were modelled:
 
 The control law is based on the relative difference between the pair of agents with respect to a desired separation distance. The control input $u_i$ also consists of velocity damping.
 
-<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/potentials/quadratic_anim_20250825_202029.gif" style="width:75%;">
+<img src="https://github.com/ericjhkim/flocking_sandbox/blob/main/visualizations/potentials/quadratic_anim_20250917_122228.gif" style="width:75%;">
 
 ### Geometric PD Connectivity Maintenance ([global.py](/geometric/global.py))
 A simple proportional-derivative (PD) controller was implemented using geometric control theory on Special Euclidean Group SE(3) for holonomic, double integrator model agents. This implementation also uses the subgraph isomorphism technique in [1] to identify a matching spanning tree between two swarm position configurations. The control law is described below, with tunable gains $k_p$ and $k_d$.

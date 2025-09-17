@@ -55,7 +55,7 @@ class Flock(agents.Agents):
 
     def control(self, t):
         # Update adjacency matrix
-        self.A1 = self.get_adjacency(self.X)
+        # self.A1 = self.get_adjacency(self.X)
         
         # Compute spring law
         U = np.zeros((self.N_AGENTS, 3))

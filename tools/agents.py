@@ -10,10 +10,10 @@ from networkx.algorithms import isomorphism
 import itertools
 from abc import ABCMeta, abstractmethod
 import random
-import environment
+import tools.environment as environment
 
 class Agents(metaclass=ABCMeta):
-    def __init__(self, N_INT, SUBGRAPHS, N_AGENTS, SEED, D_MIN=5, D_MAX=25, R_MAX=30, dt=0.1, T_VEC=[0,0,0], VERBOSE=True):
+    def __init__(self, N_INT, SUBGRAPHS, N_AGENTS, SEED, D_MIN=5.0, D_MAX=25.0, R_MIN=1.0, R_MAX=30.0, dt=0.1, T_VEC=[0,0,0], VERBOSE=True):
         # Initialize parameters
         self.N_INT = N_INT                                  # Number of integrators
         self.SUBGRAPHS = SUBGRAPHS                          # Enable/disable subgraphs
@@ -26,9 +26,14 @@ class Agents(metaclass=ABCMeta):
             np.random.seed()                                # Random seed
         self.D_MIN = D_MIN                                  # Minimum distance between agents (for random generation)
         self.D_MAX = D_MAX                                  # Maximum distance between agents (for random generation)
+        self.R_MIN = R_MIN                                  # Collision radius of agents
         self.R_MAX = R_MAX                                  # Maximum sensing radius of agents
+
+        self.U_CLIP = 5.0                                   # Maximum control magnitude
+
         self.dt = dt                                        # Time step
         self.T_VEC = T_VEC                                  # Translation vector
+
         self.VERBOSE = VERBOSE                              # Enable/disable print statements
 
         self.ENV = environment.Environment()                # Environment object
@@ -51,10 +56,10 @@ class Agents(metaclass=ABCMeta):
 
         # Data storage
         self.data = {
-            "position": [],
-            "velocity": [],
-            "adjacency": [],
-            "control": []
+            "position": [self.X.copy()],
+            "velocity": [self.V.copy()],
+            "adjacency": [self.get_adjacency(self.X)],
+            "control": [self.U.copy()],
         }
 
     @abstractmethod
@@ -68,7 +73,7 @@ class Agents(metaclass=ABCMeta):
         """
         Update agent states.
         """
-        self.U = self.control(t)
+        self.U = np.clip(self.control(t), -self.U_CLIP, self.U_CLIP)
 
         self.V = self.dynamics(self.U)
         self.X += self.V * self.dt  # Update positions
@@ -221,3 +226,22 @@ class Agents(metaclass=ABCMeta):
         self.data["velocity"].append(np.array(self.V))
         self.data["adjacency"].append(self.A1)
         self.data["control"].append(self.U)
+
+    def distance_to_nearest_neighbour(self, agent, return_vector=False):
+        """
+        Compute the distance to the nearest neighbour for a given agent.
+        """
+        if self.N_AGENTS < 2:
+            return np.inf
+
+        distances = np.linalg.norm(self.X - self.X[agent], axis=1)
+        distances_in_range = np.where((distances > 0) & (distances <= self.R_MAX), distances, np.inf)
+
+        min_neighbour = np.argmin(distances_in_range)
+        min_distance = distances_in_range[min_neighbour]
+        min_vector = self.X[min_neighbour] - self.X[agent]
+        
+        if return_vector:
+            return min_distance, min_vector
+        else:
+            return min_distance

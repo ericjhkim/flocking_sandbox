@@ -4,3 +4,5 @@ venv
 testbench.py
 neat_config_tmp
 wip
+gainvolution
+nestimation
