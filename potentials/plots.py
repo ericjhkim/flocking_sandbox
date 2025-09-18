@@ -23,7 +23,7 @@ def animate_3d(
         draw_walls=False,               # draw environment walls if available
         env=None,                       # explicit env; if None, tries flock.env
     ):
-    fig = plt.figure(figsize=(16, 8))
+    fig = plt.figure(figsize=(9, 4))
     ax3d = fig.add_subplot(121, projection='3d')  # 3D plot on the left
     ax2d = fig.add_subplot(122)                   # 2D plot on the right
 
@@ -187,9 +187,9 @@ def animate_3d(
             artists.append(tails[i])
 
             # Label
-            texts[i].set_position((pos[0], pos[1]))
-            texts[i].set_3d_properties(pos[2] + 1.0)
-            artists.append(texts[i])
+            # texts[i].set_position((pos[0], pos[1]))
+            # texts[i].set_3d_properties(pos[2] + 1.0)
+            # artists.append(texts[i])
 
             # Pose or scatter
             if has_pose:

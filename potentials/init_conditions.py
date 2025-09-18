@@ -22,7 +22,7 @@ def init_morse(n_agents, SEED, min_dist, max_dist):
         np.random.seed(SEED)
     X = generate_positions_with_spacing(n_agents, min_dist, max_dist, box_size=10.0, SEED=SEED)
     V = np.zeros((n_agents, 3))
-    params = {"D": 2.5, "a": 1.0, "r0": 1.0}
+    params = {"D": 6.0, "a": 1.0, "r0": 1.0}
     return X, V, params
 
 # Map potential names to init functions

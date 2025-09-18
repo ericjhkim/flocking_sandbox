@@ -12,7 +12,7 @@ from potentials import POTENTIALS
 from init_conditions import INIT_FUNCS
 
 # Controls
-gif_path = "visualizations/potentials/lennardjones_"
+gif_path = "visualizations/potentials/quadratic_"
 CREATE_GIF = False
 SEED = np.random.randint(0, 1e6)
 SEED = 3
@@ -22,7 +22,7 @@ print(SEED)
 SIM_TIME = 5                               # Simulation time in seconds
 N_AGENTS = 2                                # Number of agents
 
-potential_name = "lennard_jones"
+potential_name = "quadratic"
 
 def main():
     init_func = INIT_FUNCS[potential_name]
@@ -37,7 +37,7 @@ def main():
     for t in np.arange(0, SIM_TIME, flock.dt):
         flock.update(t)
 
-    plots.animate_3d(flock, CREATE_GIF, gif_path, follow=True, follow_padding=3.0)
+    plots.animate_3d(flock, CREATE_GIF, gif_path, follow=True, follow_padding=0.5)
 
 class Flock(agents.Agents):
     def __init__(self, N_INT, N_AGENTS, SEED, potential_obj, X, V):
