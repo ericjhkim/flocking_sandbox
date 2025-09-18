@@ -12,7 +12,7 @@ Ordered by implementation recency:
 5. Laplacian-Pinning Connectivity Maintenance
 
 ## Showcase
-### Artificial Potential Function Control ([potential_explorer.py](/potentials/potential_explorer.py))
+### Artificial Potential Function Control ([potentials/main.py](/potentials/main.py))
 An environment for testing different artificial potential functions in a pairwise setting.
 The following potentials were modelled:
 - Lennard-Jones
