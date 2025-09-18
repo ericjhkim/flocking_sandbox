@@ -41,15 +41,13 @@ def main():
 
 class Flock(agents.Agents):
     def __init__(self, N_INT, N_AGENTS, SEED, potential_obj, X, V):
-        super().__init__(N_INT, True, N_AGENTS, SEED, VERBOSE=False)
+        super().__init__(N_INT, False, N_AGENTS, SEED, VERBOSE=False)
         self.potential = potential_obj
 
         self.X = X
         self.V = V
         self.data['position'] = [self.X.copy()]
         self.data['velocity'] = [self.V.copy()]
-
-        delattr(self, "X_tgt")
 
     def control(self, t):
         self.A1 = self.get_adjacency(self.X)
