@@ -9,17 +9,17 @@ import numpy as np
 from tools import plots, agents
 
 # Controls
-gif_path = "visualizations/olfati/"
-CREATE_GIF = False
+gif_path = "visualizations/"
+CREATE_GIF = True
 SEED = 1
 
 # Constants
-SIM_TIME = 10                               # Simulation time in seconds
+SIM_TIME = 5                                # Simulation time in seconds
 N_AGENTS = 8                                # Number of agents
 
 c_alpha_1 = 1                               # Position-based attraction/repulsion between agents
 c_beta_1 = 3                                # Position-based attraction/repulsion for obstacles
-c_gamma_1 = 20                              # Navigational feedback term (position)
+c_gamma_1 = 1                               # Navigational feedback term (position)
 k_a = 0.9                                   # Potential depth (attraction strength) 0 < a <= b
 k_b = 1                                     # Repulsion strength
 
@@ -31,12 +31,16 @@ def main():
     for t in np.arange(0, SIM_TIME, flock.dt):
         flock.update(t)
 
-    plots.animate_3d(flock, CREATE_GIF, gif_path)
+    plots.animate_3d(flock, CREATE_GIF, gif_path, follow=True, follow_padding=3.0, cartoon=True)
 
 class Flock(agents.Agents):
     def __init__(self, N_INT, N_AGENTS, SEED):
-        super().__init__(N_INT, True, N_AGENTS, SEED, T_VEC=[20,20,0])
+        super().__init__(N_INT, False, N_AGENTS, SEED, T_VEC=[20,20,0])
         self.alg = Algorithms(self.R_MAX,c_alpha_1,c_beta_1,c_gamma_1,k_a,k_b)
+
+        self.V = np.random.uniform(-10,10,size=(N_AGENTS,3))
+        self.X_tgt = self.X.copy() + np.array([1e3,1e3,0.0])
+        self.V_tgt = np.array([2.0,1.0,0.0])
 
     def control(self, t):
         # Update adjacency matrix
@@ -51,7 +55,7 @@ class Flock(agents.Agents):
                     q_j = self.X[j]
                     p_j = self.V[j]
                     U[i] += self.alg.u_alpha(q_j,q_i,p_j,p_i)
-            U[i] += self.alg.u_gamma(q_i,self.X_tgt[i],p_i,np.zeros(3))
+            U[i] += self.alg.u_gamma(q_i,self.X_tgt[i],p_i,self.V_tgt)
 
         return U
 

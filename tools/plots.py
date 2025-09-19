@@ -27,8 +27,13 @@ def animate_3d(
         obstacle_rays=False,            # draw sensor rays if available
         x_lines=False,                  # draw +X direction lines on agents
         estimated_neighbours=None,      # plot estimated neighbours with respect to the agent represented by this index
+        cartoon=False,                  # blows up the plot for better visualization in presentations/documents
     ):
-    fig = plt.figure(figsize=(10, 8))
+
+    if cartoon:
+        fig = plt.figure(figsize=(8, 6), dpi=150)
+    else:
+        fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')
 
     position = np.array(flock.data["position"])  # shape: (T, N, 3)

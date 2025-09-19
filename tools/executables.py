@@ -6,11 +6,11 @@ from PIL import Image, ImageSequence
 import os
 
 def main():
-    gif_path = "C:\EK Google Drive\School\Comprehensives\Comp I Presentation\img\quadratic_anim_20250917_201205.gif"
-    output_path = "C:\EK Google Drive\School\Comprehensives\Comp I Presentation\img\quadratic_frames"
+    gif_path = "C:\\EK Google Drive\\School\\Comprehensives\\Comp I Presentation\\img\\anim_20250918_172814.gif"
+    output_path = "C:\\EK Google Drive\\School\\Comprehensives\\Comp I Presentation\\img\\quadratic_frames"
     # gif2png(gif_path, output_path)
 
-    output_path = "C:\EK Google Drive\School\Comprehensives\Comp I Presentation\img\quadratic_anim_20250917_201205.pdf"
+    output_path = "C:\\EK Google Drive\\School\\Comprehensives\\Comp I Presentation\\img\\anim_20250918_172814.pdf"
     pngs2pdf(gif_path, output_path)
 
 
